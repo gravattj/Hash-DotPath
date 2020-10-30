@@ -391,8 +391,6 @@ Returns a hash version of the object.
 
 =back
 
-=back
-
 =cut
 
 method toHash {
@@ -409,8 +407,6 @@ Returns a hashref version of the object.
 =item usage:
 
  $href = $dot->toHashRef;
-
-=back
 
 =back
 
