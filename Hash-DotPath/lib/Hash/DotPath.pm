@@ -34,7 +34,6 @@ Hash::DotPath - Class for manipulating hashes via dot path notation.
   $val = $dot->get('biz.baz.0.zoo');  
 
   $dot->set('foo', 'bar');
-  $dot->set('cats', []); 
   $dot->set('cats.0', 'calico');
   
   $dot->delete('foo');
@@ -47,33 +46,37 @@ Hash::DotPath - Class for manipulating hashes via dot path notation.
   
 =cut
 
-=head1 ARRAYS
+=head1 ARRAY vs HASH vivification
 
-You interact with array elements slightly differently than hash ones.  
+When assigning a value to a path where a non-existent segment of the path is 
+an integer, an array reference will be vivified at that position.  If you wish 
+to have a hash reference in its place, you must instantiate it manually in
+advance.  For example:
 
-To access an element in an array, use the numeric index in the path.
-
-  $dot = Hash::DotPath->new({foo => ['a', 'b', 'c']});
-  $dot->get('foo.0');
+  # Assuming biz isn't defined yet, this will set biz to an array reference.
   
-To set a value on an existing array, the same notation works. 
-  
-  $dot->set('foo.3', 'd');
-
-To add a NEW array to the tree, you must first instantiate it.  This is 
-because hash keys can be numeric.  Since this is a hash class, the default
-is to treat integers like hash keys unless a array already exists at the
-given location. 
-
-  $dot = Hash::DotPath->new({ foo => 'bar'});
-  
-  # WRONG - this is a non-existent array
+  $dot = Hash::DotPath->new;
   $dot->set('biz.0', 'baz'); 
+  Data::Printer::p($dot->toHashRef); 
+
+  {
+      biz   [
+          [0] "baz"
+      ]
+  }
+ 
+  # In order to set biz to a hash reference you must instantiate it first.
   
-  # CORRECT
-  $dot->set('biz', []);
+  $dot->set('biz', {});
   $dot->set('biz.0', 'baz');
-  
+  Data::Printer::p($dot->toHashRef); 
+ 
+  {
+      biz   {
+          0   "baz"
+      }
+  }
+    
 =cut
 
 ##############################################################################
@@ -360,15 +363,18 @@ method set (Str $path!,
             Any $value!) {
 
 	my @keys       = $self->_splitKey($path);
-	my $lastKey    = pop @keys;
-	my $parentPath = join $self->delimiter, @keys;
+#	my $lastKey    = pop @keys;
+#	my $parentPath = join $self->delimiter, @keys;
 
-	my $ptr = $self->_buildPath( $self->_href, \@keys );
+	my $ptr = $self->_buildParentPath( $self->_href, \@keys );
+	
+	my $lastKey = pop(@keys);
 	if ( $self->List->isArray($ptr) ) {
 		if ( $self->String->isInt($lastKey) ) {
 			$ptr->[$lastKey] = $value;
 		}
 		else {
+			my $parentPath = join($self->delimiter, @keys);
 			confess "can't reference array index at $parentPath by $lastKey";
 		}
 	}
@@ -493,32 +499,43 @@ method _get (HashRef|ArrayRef  $ptr,
 	return;    # not found (undef)
 }
 
-method _buildPath (HashRef|ArrayRef $ptr,
-                   ArrayRef         $keys) {
+method _buildParentPath (HashRef|ArrayRef $ptr,
+                         ArrayRef         $keys) {
 
 	my @remKeys = @$keys;
 
-	if (@remKeys) {
+	if (@remKeys > 1) {
 		my $currKey = shift @remKeys;
+        my $nextKey = $remKeys[0];
 
+        my $nextRef;
+        if ($self->String->isInt($nextKey)) {
+            $nextRef = [];	
+        } 	
+        else {
+            $nextRef = {};	
+        }
+         
 		if ( $self->List->isArray($ptr) ) {
+			# deref by index
 			if ( $self->String->isInt($currKey) ) {
 				if ( !exists $ptr->[$currKey] ) {
-					$ptr->[$currKey] = {};
+					$ptr->[$currKey] = $nextRef;
 				}
 
-				return $self->_buildPath( $ptr->[$currKey], \@remKeys );
+				return $self->_buildParentPath( $ptr->[$currKey], \@remKeys );
 			}
 			else {
 				confess "can't reference an array index by $currKey";
 			}
 		}
 		elsif ( $self->Hash->isHash($ptr) ) {
+			# deref by hash key
 			if ( !exists $ptr->{$currKey} ) {
-				$ptr->{$currKey} = {};
+				$ptr->{$currKey} = $nextRef;
 			}
 
-			return $self->_buildPath( $ptr->{$currKey}, \@remKeys );
+			return $self->_buildParentPath( $ptr->{$currKey}, \@remKeys );
 		}
 	}
 

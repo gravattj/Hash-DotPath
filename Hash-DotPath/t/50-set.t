@@ -46,7 +46,7 @@ ok( $val eq 'fish' );
 $val = $dot->get($path);
 ok( $val eq 'fish' );
 $val = $dot->get('key6.bird');
-ok( $Hash->isHash($val) );
+ok( $List->isArray($val) );
 
 $path = 'key7.bird';
 $val  = $dot->set( $path, [] );
