@@ -30,4 +30,4 @@ jobs:
           cd Hash-DotPath
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
-          dzil cover --author --release
+          dzil cover -report codecov
