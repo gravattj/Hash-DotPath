@@ -39,14 +39,17 @@ jobs:
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
       - name: run unit tests
-        run: dzil cover -outputdir=../../cover_reports
-      - name: upload code coverage to codecov.io
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }} 
-          directory: cover_reports/
-          file: ./coverage.html
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
+        run: dzil cover -report codecov
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+#      - name: upload coverage report to codecov.io
+#        uses: codecov/codecov-action@v1
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }} 
+#          directory: cover_reports/
+#          file: ./coverage.html
+#          fail_ci_if_error: true # optional (default = false)
+#          verbose: true # optional (default = false)
       
 # TODO: https://fossa.com/
