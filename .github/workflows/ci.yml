@@ -27,7 +27,6 @@ jobs:
         run: |
           apt-get install libmagic-dev
           cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov Dist::Zilla::App::Command::cover
-          cd Hash-DotPath
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
           dzil cover -report codecov
