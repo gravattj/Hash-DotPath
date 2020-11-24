@@ -29,13 +29,14 @@ jobs:
         uses: perl-actions/install-with-cpanm@v1
         with:
           install: |
+            App::cpanminus
             Devel::Cover::Report::Codecov
             Dist::Zilla::App::Command::cover
       - name: Regular tests
         run: |
           apt-get install libmagic-dev
-#          cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov Dist::Zilla::App::Command::cover
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
           dzil cover -report codecov
+
 # TODO: https://fossa.com/
