@@ -26,8 +26,8 @@ jobs:
       - name: Regular tests
         run: |
           apt-get install libmagic-dev
+          cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov
           cd Hash-DotPath
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
-          dzil test --author --release
-
+          dzil cover --author --release
