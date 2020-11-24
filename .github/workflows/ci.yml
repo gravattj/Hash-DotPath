@@ -24,20 +24,28 @@ jobs:
 #          - 'latest'
     name: Perl ${{ matrix.perl-version }}
     steps:
-      - uses: actions/checkout@v2
-      - name: install cpanm and multiple modules
+      - name: install extra OS pkgs
+        run: apt-get install libmagic-dev
+      - name: repo checkout
+        uses: actions/checkout@v2
+      - name: install additional perl modules
         uses: perl-actions/install-with-cpanm@v1
         with:
           install: |
             Dist::Zilla::App::Command::cover
-            Data::Printer
           sudo: false
-      - name: Regular tests
+      - name: install Dist::Zilla missing deps
         run: |
-          perl -MData::Printer -e 'p(%ENV)'
-          apt-get install libmagic-dev
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
-          dzil cover -report codecov
-
+      - name: run unit tests
+        run: dzil cover -outputdir=../../cover_reports
+      - name: upload code coverage to codecov.io
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} 
+          directory: cover_reports/
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+      
 # TODO: https://fossa.com/
