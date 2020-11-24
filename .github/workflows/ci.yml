@@ -25,17 +25,15 @@ jobs:
     name: Perl ${{ matrix.perl-version }}
     steps:
       - uses: actions/checkout@v2
-#      - name: install cpanm and multiple modules
-#        uses: perl-actions/install-with-cpanm@v1
-#        with:
-#          install: |
-#            Devel::Cover::Report::Codecov
-#            Dist::Zilla::App::Command::cover
+      - name: install cpanm and multiple modules
+        uses: perl-actions/install-with-cpanm@v1
+        with:
+          install: |
+            Dist::Zilla::App::Command::cover
+          sudo: false
       - name: Regular tests
         run: |
-          whoami
           apt-get install libmagic-dev
-          cpanm Devel::Cover::Report::Codecov Dist::Zilla::App::Command::cover
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
           dzil cover -report codecov
