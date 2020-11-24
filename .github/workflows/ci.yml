@@ -30,3 +30,4 @@ jobs:
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
           dzil cover -report codecov
+# TODO: https://fossa.com/
