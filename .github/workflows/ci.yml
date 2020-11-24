@@ -45,6 +45,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }} 
           directory: cover_reports/
+          file: ./coverage.html
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
       
