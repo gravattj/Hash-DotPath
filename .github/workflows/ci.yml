@@ -30,9 +30,11 @@ jobs:
         with:
           install: |
             Dist::Zilla::App::Command::cover
+            Data::Printer
           sudo: false
       - name: Regular tests
         run: |
+          perl -MData::Printer -e 'p(%ENV)'
           apt-get install libmagic-dev
           dzil authordeps --missing | cpanm --notest
           dzil listdeps --author --missing | cpanm --notest
